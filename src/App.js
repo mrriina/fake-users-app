@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
-import {message, Select, Slider, Button, Table} from "antd";
+import { Select, Slider, Button, Table } from "antd";
 import { faker, fakerRU, fakerEN_US, fakerPL } from '@faker-js/faker';
+import { CSVLink } from "react-csv";
 
 const columns = [
   {
@@ -29,16 +30,14 @@ const alphabetRU = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ01234567
 const alphabetEN = "aąbcćdeęfghijklłmnńoóprsśtuwyzźżABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
 const alphabetPL = "абвгдеёжзийклмнопрстуфхцчшщъыьэюяАБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯ0123456789";
 
-
 function App() {
-
   const [users, setUsers] = useState([]);
   const [region, setRegion] = useState('ru');
   const [fakerRegion, setFakerRegion] = useState(fakerRU);
   const [alphabet, setAlphabet] = useState(alphabetRU);
   const [errorAmount, setErrorAmount] = useState();
   const [seed, setSeed] = useState(faker.seed());
-
+  const [seedData, setSeedData] = useState([]);
 
   useEffect(() => {
     switch(region) {
@@ -57,13 +56,18 @@ function App() {
     }
   }, [region])
 
-
-
   useEffect(() => {
     fakerRegion.seed(+seed);
     setUsers(createUsers(20));
-  }, [fakerRegion, errorAmount, seed])
+  }, [fakerRegion, errorAmount])
 
+  useEffect(() => {
+    if(seedData[String(seed)+String(errorAmount)]) {
+      setUsers(seedData[String(seed)+String(errorAmount)])
+    } else {
+      setUsers(createUsers(20));
+    }
+  }, [seed])
 
   const createUsers = (usersCount, usersLength) => {
     usersLength = usersLength ? usersLength : 0
@@ -81,11 +85,14 @@ function App() {
       generateErrors(newUser);
       newUsers.push(newUser);
     }
+
+    let usersForSeed = {};
+    usersForSeed[String(seed)+String(errorAmount)] = newUsers;
+    setSeedData({...seedData, ...usersForSeed})
     return newUsers;
   }
 
   const generateErrors = (user) => {
-
     for (let j = 0; j < errorAmount; j++) {
       const field = faker.helpers.arrayElement([
         "fullName",
@@ -94,7 +101,7 @@ function App() {
       ]);
       const fieldValue = user[field];
 
-      if (fieldValue.length > 0) {
+      if(fieldValue.length > 0) {
         const errorType = Math.floor(Math.random() * 3);
         let index;
         
@@ -120,31 +127,12 @@ function App() {
   const handleScroll = (element) => {
     if (element.target.scrollTop + element.target.clientHeight <= element.target.scrollHeight - 1) {
       return;
-    }
-      
-      setUsers([...users, ...createUsers(10, users.length)]);
+    }  
+    setUsers([...users, ...createUsers(10, users.length)]);
   };
 
-  useEffect(() => {
-    console.log('in useEffect');
-    const handleScroll = () => {
-      if (
-        window.innerHeight + document.documentElement.scrollTop !==
-        document.documentElement.offsetHeight
-      )
-      return;
-      console.log('I am here');
-    };
-
-    window.addEventListener('scroll', handleScroll);
-
-    return () => {
-      window.removeEventListener('scroll', handleScroll);
-    };
-  }, []);
-
   return (
-    <div>
+        <div>
             <div className="header d-flex justify-content-center p-4">
                 <div className="d-flex justify-content-center w-75">
                     <div className="mx-3">
@@ -166,8 +154,9 @@ function App() {
                         <Slider 
                           onChange={(val)=>setErrorAmount(val)} 
                           value={errorAmount} 
-                          max={10} min={0} defaultValue={0}
-                                  step={0.25}/>
+                          max={10} min={0} 
+                          defaultValue={0}
+                          step={0.25}/>
                     </div>
                     <div className="mx-3">
                         <h6>Value:</h6>
@@ -175,7 +164,8 @@ function App() {
                           onChange={(e)=>setErrorAmount(e.target.value)} 
                           className="input"
                           value={errorAmount}
-                          max={1000} min={0} step={0.25}
+                          max={1000} min={0} 
+                          step={0.25}
                           type="number"/>
                     </div>
                     <div>
@@ -186,7 +176,12 @@ function App() {
                           min={0}
                           className="input" 
                           type="number"/>
-                        <Button onClick={()=>setSeed(faker.seed())}>Generate</Button>
+                        <Button onClick={()=>setSeed(faker.seed())} className='mx-3'>Generate</Button>
+                        <CSVLink data={users}>
+                          <Button type="dashed">
+                            Export to CSV
+                          </Button>
+                        </CSVLink>
                     </div>
                 </div>
             </div>
