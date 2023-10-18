@@ -117,9 +117,31 @@ function App() {
     }
   }
 
-  const handleScroll = () => {
-    console.log('I am here');
+  const handleScroll = (element) => {
+    if (element.target.scrollTop + element.target.clientHeight <= element.target.scrollHeight - 1) {
+      return;
+    }
+      
+      setUsers([...users, ...createUsers(10, users.length)]);
   };
+
+  useEffect(() => {
+    console.log('in useEffect');
+    const handleScroll = () => {
+      if (
+        window.innerHeight + document.documentElement.scrollTop !==
+        document.documentElement.offsetHeight
+      )
+      return;
+      console.log('I am here');
+    };
+
+    window.addEventListener('scroll', handleScroll);
+
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+    };
+  }, []);
 
   return (
     <div>
@@ -168,7 +190,7 @@ function App() {
                     </div>
                 </div>
             </div>
-            <div className='overflow-auto p-4' onScroll={() => handleScroll}>
+            <div className='overflow-auto p-4' onScroll={handleScroll} style={{ height: "470px" }}>
               <Table bordered hover 
                 columns={columns}
                 dataSource={users}
