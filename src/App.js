@@ -57,19 +57,16 @@ function App() {
   }, [region])
 
   useEffect(() => {
-    fakerRegion.seed(+seed);
     setUsers(createUsers(20));
   }, [fakerRegion, errorAmount])
 
   useEffect(() => {
-    if(seedData[String(seed)+String(errorAmount)]) {
-      setUsers(seedData[String(seed)+String(errorAmount)])
-    } else {
-      setUsers(createUsers(20));
-    }
+    let data = seedData[String(seed)+String(errorAmount)]
+    setUsers(data ? data : createUsers(20))
   }, [seed])
 
   const createUsers = (usersCount, usersLength) => {
+    fakerRegion.seed(+seed);
     usersLength = usersLength ? usersLength : 0
     const newUsers = []
     for(let i=0; i<usersCount; i++) {
