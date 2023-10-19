@@ -66,8 +66,10 @@ function App() {
   }, [seed])
 
   const createUsers = (usersCount, usersLength) => {
-    fakerRegion.seed(+seed);
-    usersLength = usersLength ? usersLength : 0
+    if(!usersLength) {
+      usersLength = 0
+      fakerRegion.seed(+seed)
+    }
     const newUsers = []
     for(let i=0; i<usersCount; i++) {
       const newUser = {
@@ -124,7 +126,7 @@ function App() {
   const handleScroll = (element) => {
     if (element.target.scrollTop + element.target.clientHeight <= element.target.scrollHeight - 1) {
       return;
-    }  
+    } 
     setUsers([...users, ...createUsers(10, users.length)]);
   };
 
